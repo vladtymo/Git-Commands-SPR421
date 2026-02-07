@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Template Method Pattern — A Practical Guide</title>
+    <meta name="description"
+        content="A concise, practical guide to the Template Method design pattern with examples in Java, C#, JavaScript, and Python." />
+    <style>
+        :root {
+            --bg: #0b1020;
+            --card: #111730;
+            --card-2: #0e142a;
+            --text: #e9eefc;
+            --muted: #a9b2d0;
+            --brand: #7aa2ff;
+            --accent: #55e6c1;
+            --border: #22305f;
+            --code: #0a0f22;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f6f7fb;
+                --card: #ffffff;
+                --card-2: #f9faff;
+                --text: #0b1020;
+                --muted: #475070;
+                --brand: #2d5bff;
+                --accent: #0bb88e;
+                --border: #e5e8f4;
+                --code: #0b1020;
+                --shadow: 0 10px 24px rgba(12, 24, 64, .08);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            background: radial-gradient(1200px 600px at 10% -10%, rgba(122, 162, 255, .15), transparent 60%),
+                radial-gradient(1000px 500px at 110% 10%, rgba(85, 230, 193, .12), transparent 60%), var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 20px 64px;
+        }
+
+        header {
+            display: grid;
+            gap: 14px;
+            align-items: start;
+            margin-bottom: 26px;
+        }
+
+        .title {
+            font-size: clamp(28px, 4vw, 48px);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            max-width: 70ch;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--brand);
+            background: color-mix(in oklab, var(--brand) 12%, transparent);
+            border: 1px solid color-mix(in oklab, var(--brand) 35%, var(--border));
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+
+        .clear-styles {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(12, 1fr);
+        }
+
+        .card {
+            grid-column: span 12;
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .card.span-4 {
+                grid-column: span 4;
+            }
+
+            .card.span-6 {
+                grid-column: span 6;
+            }
+
+            .card.span-8 {
+                grid-column: span 8;
+            }
+
+            .card.span-12 {
+                grid-column: span 12;
+            }
+        }
+
+        h2 {
+            margin: 6px 0 14px;
+            font-size: clamp(22px, 2.6vw, 30px);
+            letter-spacing: -0.01em;
+        }
+
+        h3 {
+            margin: 10px 0 12px;
+            font-size: 18px;
+            letter-spacing: 0;
+        }
+
+        p {
+            color: var(--text);
+            opacity: .95;
+        }
+
+        ul {
+            margin: 8px 0 0 20px;
+            color: var(--text);
+            opacity: .95;
+        }
+
+        li {
+            margin: 6px 0;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .kbd {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+            font-size: 12px;
+            background: color-mix(in oklab, var(--text) 6%, transparent);
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        pre,
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        }
+
+        pre {
+            margin: 14px 0;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, color-mix(in oklab, var(--card) 92%, #000 8%), var(--card-2));
+            overflow: auto;
+        }
+
+        code.inline {
+            background: color-mix(in oklab, var(--text) 8%, transparent);
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            filter: brightness(1.05);
+        }
+
+        .btn.ghost {
+            background: transparent;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: grid;
+            gap: 10px;
+        }
+
+        .tablist {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tab {
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            color: var(--muted);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            user-select: none;
+        }
+
+        .tab[data-active="true"] {
+            color: var(--text);
+            outline: 2px solid color-mix(in oklab, var(--brand) 40%, transparent);
+        }
+
+        .tabpanel {
+            display: none;
+        }
+
+        .tabpanel.active {
+            display: block;
+        }
+
+        .kicker {
+            font-size: 12px;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .callout {
+            border: 1px dashed var(--border);
+            background: color-mix(in oklab, var(--brand) 8%, transparent);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        footer {
+            margin-top: 40px;
+            opacity: .75;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .diagram {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card-2);
+            padding: 6px;
+        }
+
+        .pill-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            font-size: 12px;
+            color: var(--text);
+            opacity: .9;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <span class="badge" aria-label="Design Pattern">Design Pattern • Behavioral</span>
+            <h1 class="title">The Template Method Pattern</h1>
+            <p class="subtitle">Defines the skeleton of an algorithm in the superclass but lets subclasses override specific steps of the algorithm without changing its structure.</p>
+            <div class="toolbar">
+                <button class="btn">
+                    <a class="clear-styles" href="../index.html">Back Home</a>
+                </button>
+                <button id="copyLink" class="btn" aria-label="Copy shareable link">Copy Link</button>
+                <button id="toggleContrast" class="btn ghost" aria-label="Toggle high contrast">Toggle Contrast</button>
+            </div>
+
+        </header>
+
+        <section class="grid">
+            <article class="card span-8">
+                <h2>When to Use</h2>
+                <ul>
+                    <li>You want to let clients extend only particular steps of an algorithm, but not the whole algorithm or its structure.</li>
+                    <li>You have several classes that contain almost identical algorithms with some minor differences.</li>
+                    <li>You have a lot of duplicate code in several classes that share a common behavior.</li>
+                </ul>
+                <div class="callout" role="note">
+                    <strong>Note:</strong> Template Method is often used in frameworks, where each class implements the invariant parts of a domain's architecture, leaving "placeholders" for customization options.
+                </div>
+            </article>
+
+            <aside class="card span-4">
+                <h2>Checklist</h2>
+                <ul>
+                    <li>Identify the standard vs. variable steps in the algorithm.</li>
+                    <li>Create an abstract base class.</li>
+                    <li>Define the template method to orchestrate the steps (consider <span class="kbd">final</span>).</li>
+                    <li>Declare abstract methods for steps that must be unique.</li>
+                    <li>Use "hooks" for optional extensions.</li>
+                </ul>
+            </aside>
+
+            <article class="card span-12">
+                <h2>UML Snapshot</h2>
+                <svg class="diagram" viewBox="0 0 820 180" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="UML diagram of Template Method">
+                    <defs>
+                        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#7aa2ff" stop-opacity="0.7" />
+                            <stop offset="100%" stop-color="#55e6c1" stop-opacity="0.7" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="180" y="20" width="220" height="140" rx="12" fill="url(#g)" opacity="0.08"
+                        stroke="currentColor" />
+                    <rect x="180" y="20" width="220" height="140" rx="12" fill="none" stroke="currentColor" />
+                    <text x="290" y="42" text-anchor="middle" font-weight="600" font-style="italic">AbstractClass</text>
+                    <line x1="180" y1="55" x2="400" y2="55" stroke="currentColor" />
+                    <text x="190" y="85">+ templateMethod()</text>
+                    <text x="190" y="105" font-style="italic"># abstractStep1()</text>
+                    <text x="190" y="125" font-style="italic"># abstractStep2()</text>
+                    <text x="190" y="145"># hook()</text>
+
+                    <rect x="500" y="20" width="220" height="140" rx="12" fill="url(#g)" opacity="0.08"
+                        stroke="currentColor" />
+                    <rect x="500" y="20" width="220" height="140" rx="12" fill="none" stroke="currentColor" />
+                    <text x="610" y="42" text-anchor="middle" font-weight="600">ConcreteClass</text>
+                    <line x1="500" y1="55" x2="720" y2="55" stroke="currentColor" />
+                    <text x="510" y="105"># abstractStep1()</text>
+                    <text x="510" y="125"># abstractStep2()</text>
+                    <text x="510" y="145"># hook()</text>
+
+                    <defs>
+                        <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"
+                            markerUnits="strokeWidth">
+                            <path d="M0,0 L0,6 L6,3 z" fill="none" stroke="currentColor" />
+                        </marker>
+                    </defs>
+                    <line x1="610" y1="20" x2="610" y2="10" stroke="currentColor" />
+                    <line x1="610" y1="10" x2="290" y2="10" stroke="currentColor" />
+                    <line x1="290" y1="10" x2="290" y2="20" stroke="currentColor" marker-end="url(#arrow)" />
+                </svg>
+            </article>
+
+            <article class="card span-12">
+                <h2>Idiomatic Implementations</h2>
+                <div class="tabs" id="langTabs">
+                    <div class="tablist" role="tablist" aria-label="Languages">
+                        <button class="tab" role="tab" aria-controls="tab-java" data-tab="java">Java</button>
+                        <button class="tab" role="tab" aria-controls="tab-csharp" data-tab="csharp">C#</button>
+                        <button class="tab" role="tab" aria-controls="tab-js" data-tab="js">JavaScript</button>
+                        <button class="tab" role="tab" aria-controls="tab-py" data-tab="py">Python</button>
+                    </div>
+
+                    <section class="tabpanel" id="tab-java" role="tabpanel" aria-labelledby="java">
+                        <h3>Java — Abstract Class & Final Method</h3>
+                        <pre><code>public abstract class DataMiner {
+    // Final prevents overriding the algorithm structure
+    public final void mine(String path) {
+        File file = openFile(path);
+        String rawData = extractData(file);
+        String data = parseData(rawData);
+        String analysis = analyzeData(data);
+        sendReport(analysis);
+        closeFile(file);
+    }
+    
+    // Abstract steps to be implemented by subclasses
+    protected abstract File openFile(String path);
+    protected abstract String extractData(File file);
+    protected abstract String parseData(String rawData);
+    protected abstract void closeFile(File file);
+    
+    // Common steps shared by all
+    protected String analyzeData(String data) { return "Analyzed: " + data; }
+    protected void sendReport(String analysis) { System.out.println(analysis); }
+}
+</code></pre>
+                    </section>
+
+                    <section class="tabpanel" id="tab-csharp" role="tabpanel" aria-labelledby="csharp">
+                        <h3>C# — Abstract Class & Hooks</h3>
+                        <pre><code>public abstract class BreadBaker {
+    public void MakeBread() {
+        MixIngredients();
+        Bake();
+        if (DoSlice()) Slice();
+    }
+    
+    protected abstract void MixIngredients();
+    protected abstract void Bake();
+    
+    // Default hook implementation
+    protected virtual void Slice() {
+        Console.WriteLine("Slicing the bread " + GetSlices() + " ways.");
+    }
+    
+    // Hook to control flow
+    protected virtual bool DoSlice() { return true; }
+    protected virtual int GetSlices() { return 8; }
+}
+</code></pre>
+                    </section>
+
+                    <section class="tabpanel" id="tab-js" role="tabpanel" aria-labelledby="js">
+                        <h3>JavaScript — Class or Function Composition</h3>
+                        <pre><code>class GameAI {
+    turn() {
+        this.collectResources();
+        this.buildStructures();
+        this.attack();
+    }
+
+    collectResources() { 
+        throw new Error('Must implement collectResources'); 
+    }
+    
+    // Optional hook
+    buildStructures() {
+        // default: do nothing
+    }
+
+    attack() {
+        console.log("Attacking!");
+    }
+}
+
+class OrcsAI extends GameAI {
+    collectResources() {
+        console.log("Orcs gathering wood.");
+    }
+}
+</code></pre>
+                    </section>
+
+                    <section class="tabpanel" id="tab-py" role="tabpanel" aria-labelledby="py">
+                        <h3>Python — ABC & Hook Methods</h3>
+                        <pre><code>from abc import ABC, abstractmethod
+
+class Network(ABC):
+    def post(self, message):
+        if self.login(self.username, self.password):
+            self.send_data(message.encode())
+            self.logout()
+            
+    @abstractmethod
+    def login(self, user, pwd): pass
+    
+    @abstractmethod
+    def send_data(self, data): pass
+    
+    # Hook with default implementation
+    def logout(self):
+        print("Default logout...")
+
+class Twitter(Network):
+    def login(self, user, pwd):
+        print(f"Logging in to Twitter as {user}")
+        return True
+    
+    def send_data(self, data):
+        print(f"Tweeting: {data}")
+</code></pre>
+                    </section>
+                </div>
+            </article>
+
+            <article class="card span-6">
+                <h2>Pros & Cons</h2>
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <h3>✅ Benefits</h3>
+                        <ul>
+                            <li>Eliminates duplicate code (DRY).</li>
+                            <li>Standardizes algorithm structure.</li>
+                            <li>Subclasses focus on details, not orchestration.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>⚠️ Pitfalls</h3>
+                        <ul>
+                            <li>Clients might be limited by the provided skeleton.</li>
+                            <li>Liskov Substitution Principle violations if steps are suppressed.</li>
+                            <li>Harder to maintain as the number of steps grows.</li>
+                        </ul>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card span-6">
+                <h2>Alternatives</h2>
+                <ul>
+                    <li><strong>Strategy Pattern</strong>: Use composition instead of inheritance to alter parts of behavior. Strategy modifies behavior at runtime, Template Method is static.</li>
+                    <li><strong>Factory Method</strong>: Often called within a template method step.</li>
+                </ul>
+                <div class="pill-list" aria-label="Related">
+                    <span class="pill">Inheritance</span>
+                    <span class="pill">Hooks</span>
+                    <span class="pill">Inversion of Control</span>
+                </div>
+            </article>
+
+            <article class="card span-8">
+                <h2>Real‑World Demo (JS)</h2>
+                <p>A <code class="inline">BeverageMaker</code> class that defines the brewing process. Select a type to run the specific steps.
+                </p>
+                <div class="toolbar">
+                    <button class="btn" id="makeTea">Brew Tea</button>
+                    <button class="btn" id="makeCoffee">Brew Coffee</button>
+                    <button class="btn ghost" id="reset">Clear</button>
+                </div>
+                <pre id="log" style="height: 150px;"><code>Waiting for input...</code></pre>
+            </article>
+
+            <aside class="card span-4">
+                <h2>Testing Tips</h2>
+                <ul>
+                    <li>Test the template orchestration separately from the step implementations if possible.</li>
+                    <li>Use spies to verify that abstract steps are called in the correct order.</li>
+                    <li>Ensure hooks perform as expected (both default and overridden).</li>
+                </ul>
+                <h3>Anti‑Patterns</h3>
+                <ul>
+                    <li><strong>God Object</strong>: Putting too much logic in the base class.</li>
+                    <li><strong>Violating LSP</strong>: Turning off essential steps in subclasses silently.</li>
+                </ul>
+            </aside>
+
+        </section>
+
+        <footer>
+            <p>© 2026 Template Method Pattern Guide. Built as a single HTML file.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Link copier
+        document.getElementById('copyLink').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(location.href);
+                const btn = document.getElementById('copyLink');
+                const old = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = old, 1200);
+            } catch { }
+        });
+
+        // Contrast toggle (temporary CSS override)
+        const toggleBtn = document.getElementById('toggleContrast');
+        let high = false;
+        toggleBtn.addEventListener('click', () => {
+            high = !high;
+            document.documentElement.style.setProperty('--bg', high ? '#05070f' : '');
+            document.documentElement.style.setProperty('--card', high ? '#0a0f22' : '');
+            document.documentElement.style.setProperty('--card-2', high ? '#0b1020' : '');
+            document.documentElement.style.setProperty('--text', high ? '#f2f6ff' : '');
+            document.documentElement.style.setProperty('--border', high ? '#243463' : '');
+        });
+
+        // Tabs logic
+        const tabsRoot = document.getElementById('langTabs');
+        const tabs = Array.from(tabsRoot.querySelectorAll('.tab'));
+        const panels = Array.from(tabsRoot.querySelectorAll('.tabpanel'));
+        function activate(id) {
+            tabs.forEach(t => t.dataset.active = (t.dataset.tab === id));
+            panels.forEach(p => p.classList.toggle('active', p.id === 'tab-' + id));
+        }
+        tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab)));
+        activate('java');
+
+        // Template Method Demo
+        const log = document.getElementById('log');
+        function logMsg(msg) { 
+            if (log.textContent === 'Waiting for input...') log.textContent = '';
+            log.textContent += msg + '\n';
+            log.scrollTop = log.scrollHeight;
+        }
+
+        class CaffeineBeverage {
+            // Template Method
+            prepareRecipe() {
+                this.boilWater();
+                this.brew();
+                this.pourInCup();
+                if (this.customerWantsCondiments()) {
+                    this.addCondiments();
+                } else {
+                    logMsg("  Skipping condiments (Hook).");
+                }
+                logMsg("Done!\n");
+            }
+
+            boilWater() {
+                logMsg("1. Boiling water...");
+            }
+
+            pourInCup() {
+                logMsg("3. Pouring into cup...");
+            }
+
+            // Hooks / Abstract
+            brew() { throw new Error("Abstract method!"); }
+            addCondiments() { throw new Error("Abstract method!"); }
+            
+            // Hook
+            customerWantsCondiments() {
+                return true;
+            }
+        }
+
+        class Tea extends CaffeineBeverage {
+            brew() {
+                logMsg("2. Steeping the tea...");
+            }
+            addCondiments() {
+                logMsg("4. Adding Lemon...");
+            }
+        }
+
+        class Coffee extends CaffeineBeverage {
+            brew() {
+                logMsg("2. Dripping Coffee through filter...");
+            }
+            addCondiments() {
+                logMsg("4. Adding Sugar and Milk...");
+            }
+            customerWantsCondiments() {
+                // Randomly decide sometimes for demo purposes, or hardcode
+                return true; 
+            }
+        }
+
+        document.getElementById('makeTea').addEventListener('click', () => {
+            log.textContent = '--- Making Tea ---\n';
+            const tea = new Tea();
+            tea.prepareRecipe();
+        });
+
+        document.getElementById('makeCoffee').addEventListener('click', () => {
+            log.textContent = '--- Making Coffee ---\n';
+            const coffee = new Coffee();
+            coffee.prepareRecipe();
+        });
+
+        document.getElementById('reset').addEventListener('click', () => {
+             log.textContent = 'Waiting for input...';
+        });
+    </script>
+</body>
+
+</html>
