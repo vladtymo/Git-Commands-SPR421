@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bridge Pattern — Structural Guide</title>
+
+    <style>
+        :root {
+            --bg: #0b1020;
+            --card: #111730;
+            --card-2: #0e142a;
+            --text: #e9eefc;
+            --muted: #a9b2d0;
+            --brand: #7aa2ff;
+            --border: #22305f;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, Arial;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 40px;
+            margin: 0 0 10px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(122, 162, 255, 0.15);
+            color: var(--brand);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        pre {
+            background: #0a0f22;
+            padding: 16px;
+            border-radius: 12px;
+            overflow: auto;
+            border: 1px solid var(--border);
+        }
+
+        button {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        button.active {
+            color: white;
+            border-color: var(--brand);
+        }
+
+        .tab {
+            display: none;
+        }
+
+        .tab.active {
+            display: block;
+        }
+
+        svg {
+            width: 100%;
+            background: var(--card-2);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <span class="badge">Design Pattern • Structural</span>
+        <h1>Bridge Pattern</h1>
+        <p>Decouple abstraction from implementation so both can evolve independently.</p>
+
+        <div class="card">
+            <h2>When to Use</h2>
+            <ul>
+                <li>When you want to avoid a permanent binding between abstraction and implementation.</li>
+                <li>When both abstractions and implementations should be extensible independently.</li>
+                <li>When you want cleaner, more scalable architecture.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>UML Structure</h2>
+            <svg viewBox="0 0 800 200">
+                <rect x="50" y="40" width="250" height="120" fill="none" stroke="white" />
+                <text x="175" y="65" text-anchor="middle">Abstraction</text>
+
+                <rect x="500" y="40" width="250" height="120" fill="none" stroke="white" />
+                <text x="625" y="65" text-anchor="middle">Implementor</text>
+
+                <line x1="300" y1="100" x2="500" y2="100" stroke="white" />
+            </svg>
+        </div>
+
+        <div class="card">
+            <h2>Implementation Examples</h2>
+
+            <div>
+                <button onclick="showTab('java')" id="btn-java">Java</button>
+                <button onclick="showTab('csharp')" id="btn-csharp">C#</button>
+                <button onclick="showTab('js')" id="btn-js">JavaScript</button>
+            </div>
+
+            <div id="java" class="tab">
+                <pre><code>
+interface Device {
+    void turnOn();
+    void turnOff();
+}
+
+class TV implements Device {
+    public void turnOn() { System.out.println("TV ON"); }
+    public void turnOff() { System.out.println("TV OFF"); }
+}
+
+abstract class Remote {
+    protected Device device;
+    public Remote(Device device) {
+        this.device = device;
+    }
+    public abstract void togglePower();
+}
+
+class BasicRemote extends Remote {
+    public BasicRemote(Device device) {
+        super(device);
+    }
+    public void togglePower() {
+        device.turnOn();
+    }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        Device tv = new TV();
+        Remote remote = new BasicRemote(tv);
+        remote.togglePower();
+    }
+}
+</code></pre>
+            </div>
+
+            <div id="csharp" class="tab">
+                <pre><code>
+interface IDevice {
+    void TurnOn();
+    void TurnOff();
+}
+
+class TV : IDevice {
+    public void TurnOn() => Console.WriteLine("TV ON");
+    public void TurnOff() => Console.WriteLine("TV OFF");
+}
+
+abstract class Remote {
+    protected IDevice device;
+    protected Remote(IDevice device) {
+        this.device = device;
+    }
+    public abstract void TogglePower();
+}
+
+class AdvancedRemote : Remote {
+    public AdvancedRemote(IDevice device) : base(device) {}
+    public override void TogglePower() {
+        device.TurnOn();
+    }
+}
+
+class Program {
+    static void Main() {
+        IDevice tv = new TV();
+        Remote remote = new AdvancedRemote(tv);
+        remote.TogglePower();
+    }
+}
+</code></pre>
+            </div>
+
+            <div id="js" class="tab">
+                <pre><code>
+class Device {
+    turnOn(){}
+    turnOff(){}
+}
+
+class TV extends Device {
+    turnOn(){ console.log("TV ON"); }
+    turnOff(){ console.log("TV OFF"); }
+}
+
+class Remote {
+    constructor(device){
+        this.device = device;
+    }
+    togglePower(){
+        this.device.turnOn();
+    }
+}
+
+const tv = new TV();
+const remote = new Remote(tv);
+remote.togglePower();
+</code></pre>
+            </div>
+
+        </div>
+
+        <div class="card">
+            <h2>Pros & Cons</h2>
+            <h3>Advantages</h3>
+            <ul>
+                <li>Independent extensibility</li>
+                <li>Cleaner architecture</li>
+                <li>Prevents class explosion</li>
+            </ul>
+
+            <h3>Disadvantages</h3>
+            <ul>
+                <li>More abstraction layers</li>
+                <li>Can complicate small projects</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        function showTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            document.getElementById(name).classList.add('active');
+            document.getElementById('btn-' + name).classList.add('active');
+        }
+        showTab('java');
+    </script>
+
+</body>
+
+</html>
