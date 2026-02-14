@@ -1,130 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Adapter Pattern</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Adapter Pattern</title>
 
-<style>
-:root{
---bg:#0b1020;
---card:#111730;
---card2:#0e142a;
---text:#e9eefc;
---muted:#a9b2d0;
---brand:#7aa2ff;
---border:#22305f;
-}
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #111730;
+      --card2: #0e142a;
+      --text: #e9eefc;
+      --muted: #a9b2d0;
+      --brand: #7aa2ff;
+      --border: #22305f;
+    }
 
-body{
-margin:0;
-font-family:system-ui;
-background:var(--bg);
-color:var(--text);
-}
+    body {
+      margin: 0;
+      font-family: system-ui;
+      background: var(--bg);
+      color: var(--text);
+    }
 
-.container{
-max-width:1100px;
-margin:auto;
-padding:30px;
-}
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 30px;
+    }
 
-.card{
-background:linear-gradient(180deg,var(--card),var(--card2));
-border:1px solid var(--border);
-padding:20px;
-border-radius:16px;
-margin-bottom:20px;
-}
+    .card {
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid var(--border);
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
 
-h1{font-size:42px;}
+    h1 {
+      font-size: 42px;
+    }
 
-.toolbar{
-display:flex;
-gap:10px;
-margin-bottom:20px;
-}
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
 
-button{
-padding:10px 14px;
-border-radius:12px;
-border:1px solid var(--border);
-background:var(--card);
-color:var(--text);
-cursor:pointer;
-}
+    button {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+    }
 
-button:hover{filter:brightness(1.1);}
+    button:hover {
+      filter: brightness(1.1);
+    }
 
-.tabs{
-margin-bottom:12px;
-display:flex;
-gap:8px;
-}
+    .tabs {
+      margin-bottom: 12px;
+      display: flex;
+      gap: 8px;
+    }
 
-.tab{
-padding:8px 12px;
-border-radius:999px;
-border:1px solid var(--border);
-cursor:pointer;
-color:var(--muted);
-}
+    .tab {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      color: var(--muted);
+    }
 
-.tab.active{
-outline:2px solid var(--brand);
-color:var(--text);
-}
+    .tab.active {
+      outline: 2px solid var(--brand);
+      color: var(--text);
+    }
 
-.panel{display:none;}
-.panel.active{display:block;}
+    .panel {
+      display: none;
+    }
 
-pre{
-background:#0a0f22;
-padding:14px;
-border-radius:10px;
-overflow:auto;
-}
-</style>
+    .panel.active {
+      display: block;
+    }
+
+    pre {
+      background: #0a0f22;
+      padding: 14px;
+      border-radius: 10px;
+      overflow: auto;
+    }
+  </style>
 </head>
 
 <body>
-<div class="container">
+  <div class="container">
 
-<div class="toolbar">
-<button onclick="location.href='../index.html'">⬅ Back Home</button>
-<button onclick="copy()">Copy Link</button>
-</div>
+    <div class="toolbar">
+      <button onclick="location.href='../index.html'">⬅ Back Home</button>
+      <button onclick="copy()">Copy Link</button>
+    </div>
 
-<h1>Adapter Pattern</h1>
-<p>Convert the interface of a class into another interface clients expect.</p>
+    <h1>Adapter Pattern</h1>
+    <p>Convert the interface of a class into another interface clients expect.</p>
 
-<div class="card">
-<h2>When to use</h2>
-<ul>
-<li>Legacy code integration</li>
-<li>Different API interfaces</li>
-<li>Reuse old classes</li>
-<li>Third-party libraries</li>
-</ul>
-</div>
+    <div class="card">
+      <h2>When to use</h2>
+      <ul>
+        <li>Legacy code integration</li>
+        <li>Different API interfaces</li>
+        <li>Reuse old classes</li>
+        <li>Third-party libraries</li>
+      </ul>
+    </div>
 
-<div class="card">
-<h2>Structure</h2>
-<pre>Client → Adapter → Adaptee</pre>
-</div>
+    <div class="card">
+      <h2>Structure</h2>
+      <pre>Client → Adapter → Adaptee</pre>
+    </div>
 
-<div class="card">
-<h2>Code Examples</h2>
+    <div class="card">
+      <h2>Code Examples</h2>
 
-<div class="tabs">
-<div class="tab active" data-tab="java">Java</div>
-<div class="tab" data-tab="csharp">C#</div>
-<div class="tab" data-tab="js">JavaScript</div>
-<div class="tab" data-tab="py">Python</div>
-</div>
+      <div class="tabs">
+        <div class="tab active" data-tab="java">Java</div>
+        <div class="tab" data-tab="csharp">C#</div>
+        <div class="tab" data-tab="js">JavaScript</div>
+        <div class="tab" data-tab="py">Python</div>
+      </div>
 
-<div class="panel active" id="java">
-<pre>
+      <div class="panel active" id="java">
+        <pre>
 interface Target {
  void request();
 }
@@ -142,10 +152,10 @@ class Adapter implements Target {
  }
 }
 </pre>
-</div>
+      </div>
 
-<div class="panel" id="csharp">
-<pre>
+      <div class="panel" id="csharp">
+        <pre>
 class OldApi {
  public void Old(){
   Console.WriteLine("old");
@@ -163,10 +173,10 @@ class Adapter:INew{
  }
 }
 </pre>
-</div>
+      </div>
 
-<div class="panel" id="js">
-<pre>
+      <div class="panel" id="js">
+        <pre>
 class OldApi{
  sendOld(msg){
   console.log("OLD:",msg);
@@ -185,10 +195,10 @@ class Adapter{
 const api=new Adapter();
 api.send("hello");
 </pre>
-</div>
+      </div>
 
-<div class="panel" id="py">
-<pre>
+      <div class="panel" id="py">
+        <pre>
 class Old:
  def old(self):
   print("old")
@@ -202,68 +212,69 @@ class Adapter:
 a=Adapter()
 a.new()
 </pre>
-</div>
+      </div>
 
-</div>
+    </div>
 
-<div class="card">
-<h2>Live Demo</h2>
+    <div class="card">
+      <h2>Live Demo</h2>
 
-<button id="a">Widget A send</button>
-<button id="b">Widget B send</button>
-<button id="reset">Reset</button>
+      <button id="a">Widget A send</button>
+      <button id="b">Widget B send</button>
+      <button id="reset">Reset</button>
 
-<pre id="log">ready</pre>
-</div>
+      <pre id="log">ready</pre>
+    </div>
 
-</div>
+  </div>
 
-<script>
+  <script>
 
-function copy(){
-navigator.clipboard.writeText(location.href);
-}
+    function copy() {
+      navigator.clipboard.writeText(location.href);
+    }
 
-const tabs=document.querySelectorAll('.tab');
-const panels=document.querySelectorAll('.panel');
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.panel');
 
-tabs.forEach(t=>{
-t.addEventListener('click',()=>{
-tabs.forEach(x=>x.classList.remove('active'));
-panels.forEach(p=>p.classList.remove('active'));
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        tabs.forEach(x => x.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
 
-t.classList.add('active');
-document.getElementById(t.dataset.tab).classList.add('active');
-});
-});
+        t.classList.add('active');
+        document.getElementById(t.dataset.tab).classList.add('active');
+      });
+    });
 
 
-const oldApi={
-sendOld(msg){
-return "OLD API -> "+msg;
-}
-};
+    const oldApi = {
+      sendOld(msg) {
+        return "OLD API -> " + msg;
+      }
+    };
 
-const adapter={
-send(msg){
-return oldApi.sendOld(msg);
-}
-};
+    const adapter = {
+      send(msg) {
+        return oldApi.sendOld(msg);
+      }
+    };
 
-const log=document.getElementById('log');
+    const log = document.getElementById('log');
 
-document.getElementById('a').onclick=()=>{
-log.textContent+="\nA: "+adapter.send("hello");
-};
+    document.getElementById('a').onclick = () => {
+      log.textContent += "\nA: " + adapter.send("hello");
+    };
 
-document.getElementById('b').onclick=()=>{
-log.textContent+="\nB: "+adapter.send("world");
-};
+    document.getElementById('b').onclick = () => {
+      log.textContent += "\nB: " + adapter.send("world");
+    };
 
-document.getElementById('reset').onclick=()=>{
-log.textContent="ready";
-};
-</script>
+    document.getElementById('reset').onclick = () => {
+      log.textContent = "ready";
+    };
+  </script>
 
 </body>
+
 </html>
