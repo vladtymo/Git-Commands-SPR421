@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Builder Pattern — A Practical Guide</title>
+    <meta name="description"
+        content="A comprehensive guide to the Builder design pattern with examples in Java, C#, JavaScript, and Python." />
+    <style>
+        :root {
+            --bg: #0b1020;
+            --card: #111730;
+            --card-2: #0e142a;
+            --text: #e9eefc;
+            --muted: #a9b2d0;
+            --brand: #7aa2ff;
+            --accent: #fbc531;
+            --border: #22305f;
+            --code: #0a0f22;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f6f7fb;
+                --card: #ffffff;
+                --card-2: #f9faff;
+                --text: #0b1020;
+                --muted: #475070;
+                --brand: #2d5bff;
+                --accent: #e1b12c;
+                --border: #e5e8f4;
+                --code: #0b1020;
+                --shadow: 0 10px 24px rgba(12, 24, 64, .08);
+            }
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+            background: radial-gradient(1200px 600px at 10% -10%, rgba(122, 162, 255, .15), transparent 60%),
+                        var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 32px 20px 64px; }
+        
+        header { display: grid; gap: 14px; margin-bottom: 26px; }
+        .title { font-size: clamp(28px, 4vw, 48px); line-height: 1.1; letter-spacing: -0.02em; margin: 0; }
+        .subtitle { color: var(--muted); max-width: 75ch; font-size: 18px; }
+        
+        .badge {
+            display: inline-flex; align-items: center; gap: 8px; font-size: 13px;
+            color: var(--brand); background: color-mix(in oklab, var(--brand) 12%, transparent);
+            border: 1px solid color-mix(in oklab, var(--brand) 35%, var(--border));
+            padding: 6px 12px; border-radius: 999px; width: fit-content;
+        }
+
+        .grid { display: grid; gap: 18px; grid-template-columns: repeat(12, 1fr); }
+        .card {
+            grid-column: span 12;
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 24px;
+        }
+
+        @media (min-width: 900px) {
+            .span-4 { grid-column: span 4; }
+            .span-6 { grid-column: span 6; }
+            .span-8 { grid-column: span 8; }
+        }
+
+        h2 { margin: 0 0 16px; font-size: clamp(22px, 2.6vw, 30px); }
+        h3 { margin: 12px 0; font-size: 18px; color: var(--brand); }
+        
+        ul { margin: 10px 0; padding-left: 20px; color: var(--muted); }
+        li { margin: 8px 0; color: var(--text); }
+
+        .callout {
+            border: 1px dashed var(--border);
+            background: color-mix(in oklab, var(--brand) 5%, transparent);
+            padding: 16px; border-radius: 12px; margin-top: 15px;
+        }
+
+        pre {
+            background: var(--code); padding: 16px; border-radius: 12px;
+            border: 1px solid var(--border); overflow: auto; font-size: 14px;
+        }
+
+        .btn {
+            cursor: pointer; border: 1px solid var(--border);
+            background: var(--card); color: var(--text);
+            padding: 10px 16px; border-radius: 10px; font-size: 14px; transition: 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); border-color: var(--brand); }
+
+        .tablist { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .tab {
+            padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border);
+            background: var(--card-2); color: var(--muted); cursor: pointer;
+        }
+        .tab[data-active="true"] { background: var(--brand); color: white; border-color: var(--brand); }
+        
+        .tabpanel { display: none; }
+        .tabpanel.active { display: block; }
+
+        .diagram-box {
+            background: #060918; border-radius: 12px; padding: 20px;
+            text-align: center; border: 1px solid var(--border); margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <span class="badge">Design Pattern • Creational</span>
+            <h1 class="title">The Builder Pattern</h1>
+            <p class="subtitle">A step-by-step approach to constructing complex objects. It separates the construction of an object from its representation, allowing the same process to create different versions.</p>
+            <div class="toolbar">
+                <button class="btn" onclick="window.history.back()">Back</button>
+                <button class="btn" id="copyLink">Copy Link</button>
+            </div>
+        </header>
+
+        <section class="grid">
+            <article class="card span-8">
+                <h2>Why use the Builder?</h2>
+                <p>Imagine a complex object that requires step-by-step initialization of many fields and nested objects. Such initialization code is usually buried inside a monstrous constructor with dozens of parameters.</p>
+                <ul>
+                    <li><strong>Solves "Telescoping Constructor" anti-pattern</strong> (too many parameters).</li>
+                    <li>Allows for <strong>step-by-step</strong> construction.</li>
+                    <li>Provides better control over the construction process.</li>
+                    <li>Keeps the product class clean and focused on data/behavior.</li>
+                </ul>
+            </article>
+
+            <aside class="card span-4">
+                <h2>Checklist</h2>
+                <ul>
+                    <li>Identify complex product</li>
+                    <li>Create Builder class</li>
+                    <li>Implement step methods</li>
+                    <li>Add <code>build()</code> method</li>
+                    <li>Optional: Create Director</li>
+                </ul>
+                <div class="callout">
+                    <strong>Pro Tip:</strong> Use the Builder pattern when your constructor has more than 4-5 parameters.
+                </div>
+            </aside>
+
+            <article class="card span-12">
+                <h2>Structure Overview</h2>
+                <div class="diagram-box">
+                    <code style="color: var(--brand)">Client → Director → Builder → Product</code>
+                    <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">The Director defines the order, the Builder provides implementation.</p>
+                </div>
+                
+            </article>
+
+            <article class="card span-12">
+                <h2>Implementation</h2>
+                <div class="tablist" id="tabList">
+                    <button class="tab" data-active="true" onclick="showTab('java')">Java</button>
+                    <button class="tab" onclick="showTab('csharp')">C#</button>
+                    <button class="tab" onclick="showTab('js')">JavaScript</button>
+                    <button class="tab" onclick="showTab('py')">Python</button>
+                </div>
+
+                <div id="java" class="tabpanel active">
+                    <h3>Fluent Interface Builder</h3>
+                    <pre><code>public class Computer {
+    private String CPU, RAM;
+    private boolean isGraphicsCardEnabled;
+
+    public static class Builder {
+        private Computer comp = new Computer();
+
+        public Builder setCPU(String cpu) { comp.CPU = cpu; return this; }
+        public Builder setRAM(String ram) { comp.RAM = ram; return this; }
+        public Computer build() { return comp; }
+    }
+}
+// Usage: new Computer.Builder().setCPU("i9").setRAM("32GB").build();</code></pre>
+                </div>
+
+                <div id="csharp" class="tabpanel">
+                    <h3>C# Implementation</h3>
+                    <pre><code>public class Pizza {
+    public string Dough { get; set; }
+    public string Topping { get; set; }
+}
+
+public interface IPizzaBuilder {
+    void Reset();
+    void SetDough();
+    void SetTopping();
+    Pizza GetProduct();
+}</code></pre>
+                </div>
+
+                <div id="js" class="tabpanel">
+                    <h3>Modern JavaScript (ES6)</h3>
+                    <pre><code>class UserBuilder {
+    constructor(name) {
+        this.user = new User(name);
+    }
+    setAge(age) {
+        this.user.age = age;
+        return this;
+    }
+    build() { return this.user; }
+}
+const user = new UserBuilder('Alice').setAge(25).build();</code></pre>
+                </div>
+
+                <div id="py" class="tabpanel">
+                    <h3>Pythonic Way</h3>
+                    <pre><code>class HouseBuilder:
+    def __init__(self):
+        self.house = House()
+    
+    def add_walls(self):
+        self.house.walls = 4
+        return self
+
+    def build(self):
+        return self.house</code></pre>
+                </div>
+            </article>
+
+            <article class="card span-12">
+                <h2>Live Builder Demo</h2>
+                <p>Build a custom <strong>Query String</strong> using the Builder pattern logic:</p>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn" onclick="demoBuilder.addParam('user', 'admin')">Add User</button>
+                    <button class="btn" onclick="demoBuilder.addParam('page', '5')">Add Page</button>
+                    <button class="btn" onclick="demoBuilder.setSecure()">Toggle HTTPS</button>
+                    <button class="btn" style="background: #e84118; color: white; border: none;" onclick="demoBuilder.reset()">Reset</button>
+                </div>
+                <pre id="demoLog">https://api.example.com/</pre>
+            </article>
+        </section>
+
+        <footer>
+            <p>© 2026 Design Patterns Guide • Builder Method Reference</p>
+        </footer>
+    </div>
+
+    <script>
+        // Tabs Logic
+        function showTab(lang) {
+            document.querySelectorAll('.tab').forEach(t => t.dataset.active = "false");
+            document.querySelectorAll('.tabpanel').forEach(p => p.classList.remove('active'));
+            
+            event.currentTarget.dataset.active = "true";
+            document.getElementById(lang).classList.add('active');
+        }
+
+        // Demo Builder
+        const demoBuilder = {
+            baseUrl: 'api.example.com/',
+            params: {},
+            secure: false,
+            addParam(key, val) {
+                this.params[key] = val;
+                this.render();
+            },
+            setSecure() {
+                this.secure = !this.secure;
+                this.render();
+            },
+            reset() {
+                this.params = {};
+                this.secure = false;
+                this.render();
+            },
+            render() {
+                let protocol = this.secure ? 'https://' : 'http://';
+                let query = Object.keys(this.params)
+                    .map(k => `${k}=${this.params[k]}`)
+                    .join('&');
+                document.getElementById('demoLog').textContent = 
+                    `${protocol}${this.baseUrl}${query ? '?' + query : ''}`;
+            }
+        };
+
+        // Copy Link
+        document.getElementById('copyLink').onclick = () => {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+        };
+    </script>
+</body>
+
+</html>
