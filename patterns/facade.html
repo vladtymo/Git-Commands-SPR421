@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Facade Pattern — A Practical Guide</title>
+    <meta name="description"
+        content="A concise, practical guide to the Facade design pattern: a simple, intuitive way to hide complexity behind a clean interface. Examples in Rust, JavaScript, Python, and more." />
+    <style>
+        :root {
+            --bg: #0b1020;
+            --card: #111730;
+            --card-2: #0e142a;
+            --text: #e9eefc;
+            --muted: #a9b2d0;
+            --brand: #7aa2ff;
+            --accent: #55e6c1;
+            --border: #22305f;
+            --code: #0a0f22;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f6f7fb;
+                --card: #ffffff;
+                --card-2: #f9faff;
+                --text: #0b1020;
+                --muted: #475070;
+                --brand: #2d5bff;
+                --accent: #0bb88e;
+                --border: #e5e8f4;
+                --code: #0b1020;
+                --shadow: 0 10px 24px rgba(12, 24, 64, .08);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            background: radial-gradient(1200px 600px at 10% -10%, rgba(122, 162, 255, .15), transparent 60%),
+                radial-gradient(1000px 500px at 110% 10%, rgba(85, 230, 193, .12), transparent 60%), var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 20px 64px;
+        }
+
+        header {
+            display: grid;
+            gap: 14px;
+            align-items: start;
+            margin-bottom: 26px;
+        }
+
+        .title {
+            font-size: clamp(28px, 4vw, 48px);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            max-width: 70ch;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--brand);
+            background: color-mix(in oklab, var(--brand) 12%, transparent);
+            border: 1px solid color-mix(in oklab, var(--brand) 35%, var(--border));
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+
+        .clear-styles {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(12, 1fr);
+        }
+
+        .card {
+            grid-column: span 12;
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .card.span-4 {
+                grid-column: span 4;
+            }
+
+            .card.span-6 {
+                grid-column: span 6;
+            }
+
+            .card.span-8 {
+                grid-column: span 8;
+            }
+
+            .card.span-12 {
+                grid-column: span 12;
+            }
+        }
+
+        h2 {
+            margin: 6px 0 14px;
+            font-size: clamp(22px, 2.6vw, 30px);
+            letter-spacing: -0.01em;
+        }
+
+        h3 {
+            margin: 10px 0 12px;
+            font-size: 18px;
+            letter-spacing: 0;
+        }
+
+        p {
+            color: var(--text);
+            opacity: .95;
+        }
+
+        ul {
+            margin: 8px 0 0 20px;
+            color: var(--text);
+            opacity: .95;
+        }
+
+        li {
+            margin: 6px 0;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .kbd {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+            font-size: 12px;
+            background: color-mix(in oklab, var(--text) 6%, transparent);
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        pre,
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        }
+
+        pre {
+            margin: 14px 0;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, color-mix(in oklab, var(--card) 92%, #000 8%), var(--card-2));
+            overflow: auto;
+        }
+
+        code.inline {
+            background: color-mix(in oklab, var(--text) 8%, transparent);
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            filter: brightness(1.05);
+        }
+
+        .btn.ghost {
+            background: transparent;
+        }
+
+        .tabs {
+            display: grid;
+            gap: 10px;
+        }
+
+        .tablist {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tab {
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            color: var(--muted);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            user-select: none;
+        }
+
+        .tab[data-active="true"] {
+            color: var(--text);
+            outline: 2px solid color-mix(in oklab, var(--brand) 40%, transparent);
+        }
+
+        .tabpanel {
+            display: none;
+        }
+
+        .tabpanel.active {
+            display: block;
+        }
+
+        .kicker {
+            font-size: 12px;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .callout {
+            border: 1px dashed var(--border);
+            background: color-mix(in oklab, var(--brand) 8%, transparent);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        footer {
+            margin-top: 40px;
+            opacity: .75;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .diagram {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card-2);
+            padding: 6px;
+        }
+
+        .pill-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            font-size: 12px;
+            color: var(--text);
+            opacity: .9;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <span class="badge" aria-label="Design Pattern">Design Pattern • Structural</span>
+            <h1 class="title">The Facade Pattern</h1>
+            <p class="subtitle">Provides a simplified interface to a complex subsystem, library, or framework. It's one of those intuitive patterns you often use naturally in code — even without knowing the name — to keep things readable and focused on what matters.</p>
+            <div class="toolbar">
+                <button class="btn">
+                    <a class="clear-styles" href="../index.html">Back Home</a>
+                </button>
+                <button id="copyLink" class="btn" aria-label="Copy shareable link">Copy Link</button>
+                <button id="toggleContrast" class="btn ghost" aria-label="Toggle high contrast">Toggle Contrast</button>
+            </div>
+        </header>
+
+        <section class="grid">
+            <article class="card span-8">
+                <h2>When to Use</h2>
+                <ul>
+                    <li>You want to shield client code from a complicated library, API, or set of interdependent classes.</li>
+                    <li>Only a subset of the subsystem's features is needed, and boilerplate setup feels excessive.</li>
+                    <li>You need a clean entry point to organize layers or reduce coupling between modules.</li>
+                </ul>
+                <div class="callout" role="note">
+                    <strong>Note:</strong> Facade keeps code straightforward and maintainable — but if overextended, it risks turning into yet another layer of unnecessary indirection.
+                </div>
+            </article>
+
+            <aside class="card span-4">
+                <h2>Checklist</h2>
+                <ul>
+                    <li>One (or few) facade class(es) with high-level methods</li>
+                    <li>Delegates to subsystem components internally</li>
+                    <li>Subsystem remains unaware of the facade</li>
+                    <li>Optional: multiple facades for different use cases</li>
+                    <li>Avoid exposing too much — keep it limited and purposeful</li>
+                </ul>
+            </aside>
+
+            <article class="card span-12">
+                <h2>UML Snapshot</h2>
+                <svg class="diagram" viewBox="0 0 900 180" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="UML diagram of Facade">
+                    <defs>
+                        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#7aa2ff" stop-opacity="0.7" />
+                            <stop offset="100%" stop-color="#55e6c1" stop-opacity="0.7" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="20" y="30" width="280" height="120" rx="12" fill="url(#g)" opacity="0.08"
+                        stroke="currentColor" />
+                    <rect x="20" y="30" width="280" height="120" rx="12" fill="none" stroke="currentColor" />
+                    <text x="160" y="52" text-anchor="middle" font-weight="600">Facade</text>
+                    <line x1="20" y1="65" x2="300" y2="65" stroke="currentColor" />
+                    <text x="30" y="85">+ operationA()</text>
+                    <text x="30" y="105">+ operationB()</text>
+
+                    <rect x="340" y="30" width="520" height="120" rx="12" fill="url(#g)" opacity="0.08"
+                        stroke="currentColor" />
+                    <rect x="340" y="30" width="520" height="120" rx="12" fill="none" stroke="currentColor" />
+                    <text x="600" y="52" text-anchor="middle" font-weight="600">Subsystem</text>
+                    <line x1="340" y1="65" x2="860" y2="65" stroke="currentColor" />
+                    <text x="350" y="85">- Class1</text>
+                    <text x="350" y="105">- Class2 • Class3 • ...</text>
+
+                    <defs>
+                        <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"
+                            markerUnits="strokeWidth">
+                            <path d="M0,0 L0,6 L6,3 z" fill="currentColor" />
+                        </marker>
+                    </defs>
+                    <line x1="300" y1="90" x2="340" y2="90" stroke="currentColor" marker-end="url(#arrow)" />
+                    <line x1="300" y1="100" x2="380" y2="80" stroke="currentColor" marker-end="url(#arrow)" />
+                    <line x1="300" y1="110" x2="420" y2="100" stroke="currentColor" marker-end="url(#arrow)" />
+
+                    <text x="500" y="160" text-anchor="middle" font-size="14">Client uses only Facade</text>
+                </svg>
+            </article>
+
+            <article class="card span-12">
+                <h2>Idiomatic Implementations</h2>
+                <div class="tabs" id="langTabs">
+                    <div class="tablist" role="tablist" aria-label="Languages">
+                        <button class="tab" role="tab" aria-controls="tab-rust" data-tab="rust">Rust</button>
+                        <button class="tab" role="tab" aria-controls="tab-js" data-tab="js">JavaScript</button>
+                        <button class="tab" role="tab" aria-controls="tab-py" data-tab="py">Python</button>
+                        <button class="tab" role="tab" aria-controls="tab-pseudo" data-tab="pseudo">Conceptual</button>
+                    </div>
+
+                    <section class="tabpanel" id="tab-rust" role="tabpanel" aria-labelledby="rust">
+                        <h3>Rust — Wrapping C FFI or Complex Lib (e.g., cspice bindings)</h3>
+                        <pre><code>
+// Bindings to C library:
+
+// spice_bindings.rs
+unsafe extern "C" {
+    ...
+    pub fn bodvcd_mu(id: SpiceInt, mu: *mut c_double) -> c_int;
+    ...
+}     
+
+// Wrapping unsafe code:
+// utils.rs
+pub fn mu(id: i32) -> Result< f64, SpiceError> {
+    ...
+}
+
+// Usage in facade struct
+// celestial.rs
+#[derive(Clone)]
+pub struct Celestial { 
+	pub id: i32,  
+	pub name: String,                
+	pub is_physical_body: bool,
+	pub physical_params: Option< PhysicalParams>,
+	...       
+}
+
+impl Celestial {
+    pub fn hill_sphere_radius(&self) -> Option< f32> {
+        ...
+        let sun_mu = match utils::mu(10) {
+            Ok(mu) => mu,
+            Err(_) => return None,
+        };
+        ...
+    }
+}
+
+</code></pre>
+                        <p class="muted">In Rust you often do this intuitively when binding C libs or hiding module complexity — no "pattern" required, just good API design.</p>
+                    </section>
+
+                    <section class="tabpanel" id="tab-js" role="tabpanel" aria-labelledby="js">
+                        <h3>JavaScript — Module Facade</h3>
+                        <pre><code>// complexSubsystem.js (many exports)
+// ... lots of low-level functions
+
+// facade.js
+import * as sub from './complexSubsystem.js';
+
+export function processVideo(file, format) {
+  const video = sub.loadVideo(file);
+  const codec = sub.detectCodec(video);
+  const converted = sub.convert(codec, format);
+  sub.mixAudio(converted);
+  return sub.export(converted);
+}
+
+// usage
+import { processVideo } from './facade.js';
+processVideo('cats.ogg', 'mp4');
+</code></pre>
+                        <p class="muted">Common in frontend libs or Node — hide webpack/browserify cruft or third-party mess.</p>
+                    </section>
+
+                    <section class="tabpanel" id="tab-py" role="tabpanel" aria-labelledby="py">
+                        <h3>Python — Simple Facade</h3>
+                        <pre><code>class VideoConverter:
+    def convert(self, filename, format):
+        file = VideoFile(filename)
+        source = CodecFactory().extract(file)
+        dest = MPEG4CompressionCodec() if format == "mp4" else OggCompressionCodec()
+        buffer = BitrateReader.read(filename, source)
+        result = BitrateReader.convert(buffer, dest)
+        result = AudioMixer().fix(result)
+        return File(result)
+
+# Client: one call instead of dozens
+converter = VideoConverter()
+mp4 = converter.convert("funny-cats.ogg", "mp4")
+</code></pre>
+                    </section>
+
+                    <section class="tabpanel" id="tab-pseudo" role="tabpanel" aria-labelledby="pseudo">
+                        <h3>Conceptual (from Refactoring.Guru)</h3>
+                        <pre><code>class VideoConverter:
+    def convert(filename, format):
+        # All the hidden complexity here...
+        ...
+</code></pre>
+                        <p class="muted">The essence: one clean method hides a web of initialization and sequencing.</p>
+                    </section>
+                </div>
+            </article>
+
+            <article class="card span-6">
+                <h2>Pros & Cons</h2>
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <h3>Benefits</h3>
+                        <ul>
+                            <li>Hides unnecessary details → cleaner client code</li>
+                            <li>Reduces coupling to third-party libs</li>
+                            <li>Easier to swap subsystems (change only facade)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Pitfalls</h3>
+                        <ul>
+                            <li>Can grow into a god-object if scope creeps</li>
+                            <li>Adds a thin abstraction layer — sometimes trivial</li>
+                            <li>Risk of hiding too much → debugging becomes indirect</li>
+                        </ul>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card span-6">
+                <h2>Alternatives</h2>
+                <ul>
+                    <li>Direct use: if the subsystem is already simple enough.</li>
+                    <li>Adapter: when reshaping one class/interface, not a whole subsystem.</li>
+                    <li>Mediator: for coordinating many peers; facade is simpler and one-way.</li>
+                </ul>
+                <div class="pill-list" aria-label="Related">
+                    <span class="pill">Adapter</span>
+                    <span class="pill">Mediator</span>
+                    <span class="pill">Proxy</span>
+                    <span class="pill">Singleton</span>
+                </div>
+            </article>
+
+            <article class="card span-12">
+                <h2>Common Gotchas & Hardening</h2>
+                <ul>
+                    <li>Scope creep: start small — add methods only as needed.</li>
+                    <li>Leaky abstractions: don't force clients through facade if they need full power.</li>
+                    <li>Performance: extra call hop usually negligible, but profile if in hot path.</li>
+                    <li>Rust specifics: leverage modules + visibility; facade often just a pub struct with methods.</li>
+                </ul>
+            </article>
+        </section>
+
+        <footer>
+            <p>© 2026 Facade Pattern Guide. Built as a single HTML file. Facade: often discovered before it's named.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('copyLink').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(location.href);
+                const btn = document.getElementById('copyLink');
+                const old = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = old, 1200);
+            } catch { }
+        });
+
+        const toggleBtn = document.getElementById('toggleContrast');
+        let high = false;
+        toggleBtn.addEventListener('click', () => {
+            high = !high;
+            document.documentElement.style.setProperty('--bg', high ? '#05070f' : '');
+            document.documentElement.style.setProperty('--card', high ? '#0a0f22' : '');
+            document.documentElement.style.setProperty('--card-2', high ? '#0b1020' : '');
+            document.documentElement.style.setProperty('--text', high ? '#f2f6ff' : '');
+            document.documentElement.style.setProperty('--border', high ? '#243463' : '');
+        });
+
+        const tabsRoot = document.getElementById('langTabs');
+        const tabs = Array.from(tabsRoot.querySelectorAll('.tab'));
+        const panels = Array.from(tabsRoot.querySelectorAll('.tabpanel'));
+        function activate(id) {
+            tabs.forEach(t => t.dataset.active = (t.dataset.tab === id));
+            panels.forEach(p => p.classList.toggle('active', p.id === 'tab-' + id));
+        }
+        tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab)));
+        activate('rust');
+    </script>
+</body>
+
+</html>
