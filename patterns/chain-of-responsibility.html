@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Chain of Responsibility Pattern — A Practical Guide</title>
+    <meta
+      name="description"
+      content="A concise, practical guide to the Chain of Responsibility design pattern with examples in Java, C#, JavaScript, and Python."
+    />
+
+    <style>
+      :root {
+        --bg: #0b1020;
+        --card: #111730;
+        --card-2: #0e142a;
+        --text: #e9eefc;
+        --muted: #a9b2d0;
+        --brand: #7aa2ff;
+        --accent: #55e6c1;
+        --border: #22305f;
+        --code: #0a0f22;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f7fb;
+          --card: #ffffff;
+          --card-2: #f9faff;
+          --text: #0b1020;
+          --muted: #475070;
+          --brand: #2d5bff;
+          --accent: #0bb88e;
+          --border: #e5e8f4;
+          --code: #0b1020;
+          --shadow: 0 10px 24px rgba(12, 24, 64, 0.08);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Inter,
+          "Helvetica Neue",
+          Arial,
+          "Apple Color Emoji",
+          "Segoe UI Emoji";
+        background:
+          radial-gradient(
+            1200px 600px at 10% -10%,
+            rgba(122, 162, 255, 0.15),
+            transparent 60%
+          ),
+          radial-gradient(
+            1000px 500px at 110% 10%,
+            rgba(85, 230, 193, 0.12),
+            transparent 60%
+          ),
+          var(--bg);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 20px 64px;
+      }
+
+      header {
+        display: grid;
+        gap: 14px;
+        align-items: start;
+        margin-bottom: 26px;
+      }
+
+      .title {
+        font-size: clamp(28px, 4vw, 48px);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        max-width: 75ch;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--brand);
+        background: color-mix(in oklab, var(--brand) 12%, transparent);
+        border: 1px solid color-mix(in oklab, var(--brand) 35%, var(--border));
+        padding: 6px 10px;
+        border-radius: 999px;
+        width: fit-content;
+      }
+
+      .clear-styles {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(12, 1fr);
+      }
+
+      .card {
+        grid-column: span 12;
+        background: linear-gradient(180deg, var(--card), var(--card-2));
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 20px;
+      }
+
+      @media (min-width: 900px) {
+        .card.span-4 {
+          grid-column: span 4;
+        }
+
+        .card.span-6 {
+          grid-column: span 6;
+        }
+
+        .card.span-8 {
+          grid-column: span 8;
+        }
+
+        .card.span-12 {
+          grid-column: span 12;
+        }
+      }
+
+      h2 {
+        margin: 6px 0 14px;
+        font-size: clamp(22px, 2.6vw, 30px);
+        letter-spacing: -0.01em;
+      }
+
+      h3 {
+        margin: 10px 0 12px;
+        font-size: 18px;
+        letter-spacing: 0;
+      }
+
+      p {
+        color: var(--text);
+        opacity: 0.95;
+      }
+
+      ul {
+        margin: 8px 0 0 20px;
+        color: var(--text);
+        opacity: 0.95;
+      }
+
+      li {
+        margin: 6px 0;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .kbd {
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+        font-size: 12px;
+        background: color-mix(in oklab, var(--text) 6%, transparent);
+        border: 1px solid var(--border);
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      pre,
+      code {
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+      }
+
+      pre {
+        margin: 14px 0;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: linear-gradient(
+          180deg,
+          color-mix(in oklab, var(--card) 92%, #000 8%),
+          var(--card-2)
+        );
+        overflow: auto;
+      }
+
+      code.inline {
+        background: color-mix(in oklab, var(--text) 8%, transparent);
+        border: 1px solid var(--border);
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--card), var(--card-2));
+        color: var(--text);
+        padding: 8px 12px;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        font-size: 14px;
+      }
+
+      .btn:hover {
+        filter: brightness(1.05);
+      }
+
+      .btn.ghost {
+        background: transparent;
+      }
+
+      .tabs {
+        display: grid;
+        gap: 10px;
+      }
+
+      .tablist {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tab {
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--card), var(--card-2));
+        color: var(--muted);
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        user-select: none;
+      }
+
+      .tab[data-active="true"] {
+        color: var(--text);
+        outline: 2px solid color-mix(in oklab, var(--brand) 40%, transparent);
+      }
+
+      .tabpanel {
+        display: none;
+      }
+
+      .tabpanel.active {
+        display: block;
+      }
+
+      .kicker {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .callout {
+        border: 1px dashed var(--border);
+        background: color-mix(in oklab, var(--brand) 8%, transparent);
+        padding: 12px;
+        border-radius: 12px;
+      }
+
+      footer {
+        margin-top: 40px;
+        opacity: 0.75;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .diagram {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--card-2);
+        padding: 6px;
+      }
+
+      .diagram text {
+        fill: var(--text);
+      }
+
+      .pill-list {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        font-size: 12px;
+        color: var(--text);
+        opacity: 0.9;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--card), var(--card-2));
+        padding: 6px 10px;
+        border-radius: 999px;
+      }
+
+      .split {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 1fr;
+      }
+
+      @media (min-width: 900px) {
+        .split {
+          grid-template-columns: 1.1fr 0.9fr;
+          align-items: start;
+        }
+      }
+
+      .toggleRow {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 1fr;
+        margin-top: 10px;
+      }
+
+      @media (min-width: 700px) {
+        .toggleRow {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .toggle {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--card), var(--card-2));
+      }
+
+      .toggle input {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent);
+      }
+
+      .small {
+        font-size: 13px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <header>
+        <span class="badge" aria-label="Design Pattern"
+          >Design Pattern • Behavioral</span
+        >
+        <h1 class="title">The Chain of Responsibility Pattern</h1>
+        <p class="subtitle">
+          Pass requests through a <em>sequence</em> of handlers. Each handler
+          can either process the request or forward it to the next one—perfect
+          for validation pipelines, middleware, GUI event bubbling, and layered
+          security checks.
+        </p>
+
+        <div class="toolbar">
+          <button class="btn">
+            <a class="clear-styles" href="../index.html">Back Home</a>
+          </button>
+          <button id="copyLink" class="btn" aria-label="Copy shareable link">
+            Copy Link
+          </button>
+          <button
+            id="toggleContrast"
+            class="btn ghost"
+            aria-label="Toggle high contrast"
+          >
+            Toggle Contrast
+          </button>
+        </div>
+      </header>
+
+      <section class="grid">
+        <article class="card span-8">
+          <h2>When to Use</h2>
+          <ul>
+            <li>
+              You have a request that should pass through a
+              <strong>series of checks</strong> (auth → role → rate-limit →
+              business rules).
+            </li>
+            <li>
+              You want to <strong>decouple</strong> the sender from the concrete
+              receiver(s).
+            </li>
+            <li>
+              You need a pipeline that can be <strong>reordered</strong>,
+              extended, or composed at runtime.
+            </li>
+            <li>
+              You want to avoid huge <code class="inline">if/else</code> ladders
+              with many branching conditions.
+            </li>
+          </ul>
+          <div class="callout" role="note">
+            <strong>Rule of thumb:</strong> CoR shines when “who handles it”
+            depends on runtime conditions and you want each step to stay small
+            and focused.
+          </div>
+        </article>
+
+        <aside class="card span-4">
+          <h2>Checklist</h2>
+          <ul>
+            <li>A common <span class="kbd">Handler</span> interface</li>
+            <li>
+              Base handler that stores <span class="kbd">next</span> and
+              forwards by default
+            </li>
+            <li>
+              Concrete handlers that either <span class="kbd">handle()</span> or
+              delegate
+            </li>
+            <li>
+              Clear policy: “stop on first match” vs “allow multiple handlers to
+              act”
+            </li>
+            <li>
+              Readable chain construction (builder / fluent
+              <span class="kbd">setNext</span>)
+            </li>
+          </ul>
+        </aside>
+
+        <article class="card span-12">
+          <h2>UML Snapshot</h2>
+          <svg
+            class="diagram"
+            viewBox="0 0 980 220"
+            xmlns="http://www.w3.org/2000/svg"
+            role="img"
+            aria-label="UML diagram of Chain of Responsibility"
+          >
+            <defs>
+              <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#7aa2ff" stop-opacity="0.7" />
+                <stop offset="100%" stop-color="#55e6c1" stop-opacity="0.7" />
+              </linearGradient>
+              <marker
+                id="arrow"
+                markerWidth="10"
+                markerHeight="10"
+                refX="6"
+                refY="3"
+                orient="auto"
+                markerUnits="strokeWidth"
+              >
+                <path d="M0,0 L0,6 L6,3 z" fill="currentColor" />
+              </marker>
+            </defs>
+
+            <!-- Client -->
+            <rect
+              x="20"
+              y="30"
+              width="260"
+              height="160"
+              rx="12"
+              fill="url(#g)"
+              opacity="0.08"
+              stroke="currentColor"
+            />
+            <rect
+              x="20"
+              y="30"
+              width="260"
+              height="160"
+              rx="12"
+              fill="none"
+              stroke="currentColor"
+            />
+            <text x="150" y="58" text-anchor="middle" font-weight="600">
+              Client
+            </text>
+            <line x1="20" y1="72" x2="280" y2="72" stroke="currentColor" />
+            <text x="32" y="98">+ send(request)</text>
+            <text x="32" y="118" class="muted">knows only Handler</text>
+
+            <!-- Handler interface -->
+            <rect
+              x="350"
+              y="20"
+              width="300"
+              height="180"
+              rx="12"
+              fill="url(#g)"
+              opacity="0.08"
+              stroke="currentColor"
+            />
+            <rect
+              x="350"
+              y="20"
+              width="300"
+              height="180"
+              rx="12"
+              fill="none"
+              stroke="currentColor"
+            />
+            <text x="500" y="48" text-anchor="middle" font-weight="600">
+              Handler
+            </text>
+            <line x1="350" y1="62" x2="650" y2="62" stroke="currentColor" />
+            <text x="362" y="88">- next: Handler?</text>
+            <line x1="350" y1="116" x2="650" y2="116" stroke="currentColor" />
+            <text x="362" y="142">+ setNext(h): Handler</text>
+            <text x="362" y="162">+ handle(req): Result?</text>
+
+            <!-- Concrete handlers -->
+            <rect
+              x="720"
+              y="20"
+              width="240"
+              height="85"
+              rx="12"
+              fill="url(#g)"
+              opacity="0.08"
+              stroke="currentColor"
+            />
+            <rect
+              x="720"
+              y="20"
+              width="240"
+              height="85"
+              rx="12"
+              fill="none"
+              stroke="currentColor"
+            />
+            <text x="840" y="48" text-anchor="middle" font-weight="600">
+              ConcreteHandlerA
+            </text>
+            <line x1="720" y1="62" x2="960" y2="62" stroke="currentColor" />
+            <text x="732" y="84">+ handle(req)</text>
+
+            <rect
+              x="720"
+              y="115"
+              width="240"
+              height="85"
+              rx="12"
+              fill="url(#g)"
+              opacity="0.08"
+              stroke="currentColor"
+            />
+            <rect
+              x="720"
+              y="115"
+              width="240"
+              height="85"
+              rx="12"
+              fill="none"
+              stroke="currentColor"
+            />
+            <text x="840" y="143" text-anchor="middle" font-weight="600">
+              ConcreteHandlerB
+            </text>
+            <line x1="720" y1="157" x2="960" y2="157" stroke="currentColor" />
+            <text x="732" y="179">+ handle(req)</text>
+
+            <!-- Arrows -->
+            <line
+              x1="280"
+              y1="110"
+              x2="350"
+              y2="110"
+              stroke="currentColor"
+              marker-end="url(#arrow)"
+            />
+            <line
+              x1="650"
+              y1="70"
+              x2="720"
+              y2="60"
+              stroke="currentColor"
+              marker-end="url(#arrow)"
+            />
+            <line
+              x1="650"
+              y1="150"
+              x2="720"
+              y2="158"
+              stroke="currentColor"
+              marker-end="url(#arrow)"
+            />
+          </svg>
+          <p class="muted small" style="margin-top: 10px">
+            You build a chain of objects implementing the same interface. Each
+            handler decides: “I can handle this” or “pass it forward”.
+          </p>
+        </article>
+
+        <article class="card span-6">
+          <h2>How It Works</h2>
+          <ul>
+            <li>
+              <strong>Sender</strong> submits a request to the first handler.
+            </li>
+            <li>
+              Each handler can:
+              <ul>
+                <li>
+                  <strong>Handle</strong> the request and stop the chain, or
+                </li>
+                <li>
+                  <strong>Delegate</strong> to <span class="kbd">next</span>.
+                </li>
+              </ul>
+            </li>
+            <li>
+              The chain is typically assembled at runtime (e.g., middleware
+              setup).
+            </li>
+          </ul>
+          <div class="pill-list" aria-label="Common examples">
+            <span class="pill">HTTP middleware</span>
+            <span class="pill">Input validation</span>
+            <span class="pill">Security checks</span>
+            <span class="pill">GUI event bubbling</span>
+            <span class="pill">Logging filters</span>
+          </div>
+        </article>
+
+        <article class="card span-6">
+          <h2>Common Policies</h2>
+          <ul>
+            <li>
+              <strong>First match wins:</strong> stop once a handler processes
+              the request.
+            </li>
+            <li>
+              <strong>Pipeline:</strong> every handler runs (until someone
+              blocks/fails).
+            </li>
+            <li>
+              <strong>Terminal handler:</strong> if nobody handles, end with a
+              default behavior or error.
+            </li>
+          </ul>
+          <div class="callout" role="note">
+            <strong>Tip:</strong> Make the “stop/continue” rule explicit in the
+            interface (e.g., return a result object or a boolean).
+          </div>
+        </article>
+
+        <article class="card span-12">
+          <h2>Idiomatic Implementations</h2>
+          <div class="tabs" id="langTabs">
+            <div class="tablist" role="tablist" aria-label="Languages">
+              <button
+                class="tab"
+                role="tab"
+                aria-controls="tab-java"
+                data-tab="java"
+              >
+                Java
+              </button>
+              <button
+                class="tab"
+                role="tab"
+                aria-controls="tab-csharp"
+                data-tab="csharp"
+              >
+                C#
+              </button>
+              <button
+                class="tab"
+                role="tab"
+                aria-controls="tab-js"
+                data-tab="js"
+              >
+                JavaScript
+              </button>
+              <button
+                class="tab"
+                role="tab"
+                aria-controls="tab-py"
+                data-tab="py"
+              >
+                Python
+              </button>
+            </div>
+
+            <section
+              class="tabpanel"
+              id="tab-java"
+              role="tabpanel"
+              aria-labelledby="java"
+            >
+              <h3>Java — Middleware-Style Chain</h3>
+              <pre><code>abstract class Middleware {
+  private Middleware next;
+
+  public Middleware linkWith(Middleware next) {
+    this.next = next;
+    return next;
+  }
+
+  public boolean check(String email, String password) {
+    if (!doCheck(email, password)) return false;
+    return next == null || next.check(email, password);
+  }
+
+  protected abstract boolean doCheck(String email, String password);
+}
+
+class ThrottlingMiddleware extends Middleware {
+  private int requests = 0;
+  protected boolean doCheck(String email, String password) {
+    requests++;
+    if (requests &gt; 5) return false;
+    return true;
+  }
+}
+
+class UserExistsMiddleware extends Middleware {
+  protected boolean doCheck(String email, String password) {
+    return email.endsWith("@example.com") &amp;&amp; password.length() &gt;= 6;
+  }
+}</code></pre>
+              <p class="muted">
+                Build the chain once, then reuse it across requests.
+              </p>
+            </section>
+
+            <section
+              class="tabpanel"
+              id="tab-csharp"
+              role="tabpanel"
+              aria-labelledby="csharp"
+            >
+              <h3>C# — Base Handler + SetNext</h3>
+              <pre><code>public interface IHandler {
+  IHandler SetNext(IHandler next);
+  Result Handle(Request req);
+}
+
+public abstract class Handler : IHandler {
+  private IHandler? _next;
+
+  public IHandler SetNext(IHandler next) {
+    _next = next;
+    return next;
+  }
+
+  public virtual Result Handle(Request req) {
+    return _next != null ? _next.Handle(req) : Result.NotHandled();
+  }
+}
+
+public sealed class AuthHandler : Handler {
+  public override Result Handle(Request req) {
+    if (!req.IsAuthenticated) return Result.Fail("Not authenticated");
+    return base.Handle(req);
+  }
+}</code></pre>
+              <p class="muted">
+                The base handler forwards by default; concrete ones add a
+                focused check.
+              </p>
+            </section>
+
+            <section
+              class="tabpanel"
+              id="tab-js"
+              role="tabpanel"
+              aria-labelledby="js"
+            >
+              <h3>JavaScript — Lightweight Functional Chain</h3>
+              <pre><code>const compose = (...handlers) =&gt; (req) =&gt; {
+  let i = 0;
+  const next = () =&gt; handlers[i++]?.(req, next);
+  return next();
+};
+
+const auth = (req, next) =&gt; req.user ? next() : { ok:false, msg:"Auth required" };
+const role = (req, next) =&gt; req.user.role === "admin" ? next() : next();
+const validate = (req, next) =&gt; req.payload ? next() : { ok:false, msg:"Missing payload" };
+const app = (req) =&gt; ({ ok:true, msg:"Order created" });
+
+const pipeline = compose(auth, role, validate, (req) =&gt; app(req));</code></pre>
+              <p class="muted">
+                This looks like web middleware: each handler decides whether to
+                continue.
+              </p>
+            </section>
+
+            <section
+              class="tabpanel"
+              id="tab-py"
+              role="tabpanel"
+              aria-labelledby="py"
+            >
+              <h3>Python — OOP Chain with a Default Forward</h3>
+              <pre><code>from __future__ import annotations
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class Request:
+  user: Optional[str]
+  payload: dict
+
+class Handler:
+  def __init__(self) -&gt; None:
+    self._next: Optional[Handler] = None
+
+  def set_next(self, nxt: Handler) -&gt; Handler:
+    self._next = nxt
+    return nxt
+
+  def handle(self, req: Request):
+    return self._next.handle(req) if self._next else {"ok": True, "msg": "Done"}
+
+class Auth(Handler):
+  def handle(self, req: Request):
+    if not req.user:
+      return {"ok": False, "msg": "Not authenticated"}
+    return super().handle(req)</code></pre>
+              <p class="muted">
+                Use a result object to express “blocked” vs “passed”.
+              </p>
+            </section>
+          </div>
+        </article>
+
+        <article class="card span-6">
+          <h2>Pros & Cons</h2>
+          <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 10px">
+            <div>
+              <h3>✅ Benefits</h3>
+              <ul>
+                <li>Decouples sender from receivers</li>
+                <li>Flexible: reorder/extend chain without changing sender</li>
+                <li>Handlers stay small and testable</li>
+              </ul>
+            </div>
+            <div>
+              <h3>⚠️ Pitfalls</h3>
+              <ul>
+                <li>
+                  Requests may end up unhandled (if you forget a terminal
+                  handler)
+                </li>
+                <li>Debugging can be tricky without good logging</li>
+                <li>Overuse can scatter logic into too many tiny classes</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6">
+          <h2>Alternatives & Related</h2>
+          <ul>
+            <li>
+              <strong>Decorator:</strong> similar “wrapping”, but usually meant
+              to add behavior rather than route a request.
+            </li>
+            <li>
+              <strong>Command:</strong> encapsulate a request as an object; can
+              be used inside handlers.
+            </li>
+            <li>
+              <strong>Mediator:</strong> centralizes interaction instead of
+              passing along a chain.
+            </li>
+            <li>
+              <strong>Observer:</strong> broadcasts to subscribers (not
+              sequential like a chain).
+            </li>
+          </ul>
+          <div class="pill-list" aria-label="Related">
+            <span class="pill">Middleware</span>
+            <span class="pill">Filters</span>
+            <span class="pill">Pipelines</span>
+            <span class="pill">Event bubbling</span>
+          </div>
+        </article>
+
+        <article class="card span-12">
+          <h2>Real-World Demo (Interactive Pipeline)</h2>
+          <div class="split">
+            <div>
+              <p>
+                Toggle handlers to build a dynamic chain. Then send a request
+                and watch the decision flow. The rule here is “pipeline”: each
+                step runs until one <strong>blocks</strong> or we reach the app.
+              </p>
+
+              <div class="toggleRow" aria-label="Enable or disable handlers">
+                <label class="toggle">
+                  <input type="checkbox" id="hAuth" checked />
+                  <div>
+                    <div>
+                      <strong>Auth</strong>
+                      <span class="muted">— requires a user</span>
+                    </div>
+                    <div class="muted small">Blocks if user is missing</div>
+                  </div>
+                </label>
+
+                <label class="toggle">
+                  <input type="checkbox" id="hRole" checked />
+                  <div>
+                    <div>
+                      <strong>Role</strong>
+                      <span class="muted">— admin bypass for “restricted”</span>
+                    </div>
+                    <div class="muted small">
+                      Blocks restricted action for non-admin
+                    </div>
+                  </div>
+                </label>
+
+                <label class="toggle">
+                  <input type="checkbox" id="hThrottle" checked />
+                  <div>
+                    <div>
+                      <strong>Throttle</strong>
+                      <span class="muted">— basic rate limit</span>
+                    </div>
+                    <div class="muted small">Blocks after N rapid requests</div>
+                  </div>
+                </label>
+
+                <label class="toggle">
+                  <input type="checkbox" id="hValidate" checked />
+                  <div>
+                    <div>
+                      <strong>Validate</strong>
+                      <span class="muted">— payload checks</span>
+                    </div>
+                    <div class="muted small">Blocks if payload is empty</div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="toolbar" style="margin-top: 14px">
+                <button class="btn" id="sendUser">Send as User</button>
+                <button class="btn" id="sendAdmin">Send as Admin</button>
+                <button class="btn ghost" id="sendAnon">
+                  Send as Anonymous
+                </button>
+                <button class="btn ghost" id="resetDemo">Reset Demo</button>
+              </div>
+
+              <p class="muted small" style="margin-top: 12px">
+                The request action is
+                <span class="kbd">restricted: true</span> to demonstrate the
+                role check.
+              </p>
+            </div>
+
+            <div>
+              <h3>Log</h3>
+              <pre id="demoLog"><code>ready.
+</code></pre>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-12">
+          <h2>Practical Tips</h2>
+          <ul>
+            <li>
+              <strong>Return a structured result</strong> (status + reason) to
+              make debugging easy.
+            </li>
+            <li>
+              <strong>Log at boundaries</strong> (“entered handler”, “blocked”,
+              “passed”)—chains can hide control flow.
+            </li>
+            <li>
+              <strong>Keep handlers pure</strong> when possible: avoid mixing
+              side effects with validation.
+            </li>
+            <li>
+              <strong>Prefer composition</strong>: build chains in one place
+              (bootstrap), not scattered across the app.
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <footer>
+        <p>
+          © 2026 Chain of Responsibility Guide. Single-file HTML. Toggle
+          high-contrast for projection-friendly viewing.
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      // Link copier
+      document
+        .getElementById("copyLink")
+        .addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(location.href);
+            const btn = document.getElementById("copyLink");
+            const old = btn.textContent;
+            btn.textContent = "Copied!";
+            setTimeout(() => (btn.textContent = old), 1200);
+          } catch {}
+        });
+
+      // Contrast toggle (temporary CSS override)
+      const toggleBtn = document.getElementById("toggleContrast");
+      let high = false;
+      toggleBtn.addEventListener("click", () => {
+        high = !high;
+        document.documentElement.style.setProperty(
+          "--bg",
+          high ? "#05070f" : "",
+        );
+        document.documentElement.style.setProperty(
+          "--card",
+          high ? "#0a0f22" : "",
+        );
+        document.documentElement.style.setProperty(
+          "--card-2",
+          high ? "#0b1020" : "",
+        );
+        document.documentElement.style.setProperty(
+          "--text",
+          high ? "#f2f6ff" : "",
+        );
+        document.documentElement.style.setProperty(
+          "--border",
+          high ? "#243463" : "",
+        );
+      });
+
+      // Tabs logic
+      const tabsRoot = document.getElementById("langTabs");
+      const tabs = Array.from(tabsRoot.querySelectorAll(".tab"));
+      const panels = Array.from(tabsRoot.querySelectorAll(".tabpanel"));
+      function activate(id) {
+        tabs.forEach((t) => (t.dataset.active = t.dataset.tab === id));
+        panels.forEach((p) =>
+          p.classList.toggle("active", p.id === "tab-" + id),
+        );
+      }
+      tabs.forEach((t) =>
+        t.addEventListener("click", () => activate(t.dataset.tab)),
+      );
+      activate("java");
+
+      // --- Demo: Chain of Responsibility (pipeline until blocked) ---
+      const logEl = document.getElementById("demoLog");
+      const maxLines = 80;
+
+      function now() {
+        const d = new Date();
+        return d.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+      }
+
+      function append(line) {
+        const lines = logEl.textContent.split("\n").filter(Boolean);
+        lines.push(`[${now()}] ${line}`);
+        while (lines.length > maxLines) lines.shift();
+        logEl.textContent = lines.join("\n") + "\n";
+      }
+
+      // Handler factory: OOP-ish in JS
+      class Handler {
+        constructor(name, fn) {
+          this.name = name;
+          this.fn = fn;
+          this.next = null;
+        }
+        setNext(next) {
+          this.next = next;
+          return next;
+        }
+        handle(req) {
+          append(`→ ${this.name}`);
+          const res = this.fn(req);
+          if (res && res.blocked) {
+            append(`✖ blocked by ${this.name}: ${res.reason}`);
+            return res;
+          }
+          append(`✓ passed ${this.name}`);
+          return this.next
+            ? this.next.handle(req)
+            : { ok: true, blocked: false, reason: "Reached end" };
+        }
+      }
+
+      // Demo state
+      const state = { hits: 0, windowStart: performance.now() };
+
+      function buildChain() {
+        const enabled = (id) => document.getElementById(id).checked;
+
+        const first = new Handler("Start", () => ({ blocked: false }));
+        let tail = first;
+
+        if (enabled("hAuth")) {
+          tail = tail.setNext(
+            new Handler("Auth", (req) => {
+              if (!req.user)
+                return { ok: false, blocked: true, reason: "user is missing" };
+              return { blocked: false };
+            }),
+          );
+        }
+
+        if (enabled("hRole")) {
+          tail = tail.setNext(
+            new Handler("Role", (req) => {
+              if (req.action.restricted && req.user?.role !== "admin") {
+                return {
+                  ok: false,
+                  blocked: true,
+                  reason: "restricted action requires admin",
+                };
+              }
+              return { blocked: false };
+            }),
+          );
+        }
+
+        if (enabled("hThrottle")) {
+          tail = tail.setNext(
+            new Handler("Throttle", () => {
+              const t = performance.now();
+              if (t - state.windowStart > 2500) {
+                state.windowStart = t;
+                state.hits = 0;
+              }
+              state.hits++;
+              const limit = 4;
+              if (state.hits > limit)
+                return {
+                  ok: false,
+                  blocked: true,
+                  reason: `rate limit exceeded (>${limit} / 2.5s)`,
+                };
+              return { blocked: false };
+            }),
+          );
+        }
+
+        if (enabled("hValidate")) {
+          tail = tail.setNext(
+            new Handler("Validate", (req) => {
+              if (!req.payload || Object.keys(req.payload).length === 0) {
+                return { ok: false, blocked: true, reason: "payload is empty" };
+              }
+              return { blocked: false };
+            }),
+          );
+        }
+
+        // Terminal "app" handler
+        tail.setNext(
+          new Handler("App", (req) => {
+            append(`★ handled by App: created "${req.action.name}"`);
+            return { ok: true, blocked: true, reason: "handled" }; // stop chain after handling
+          }),
+        );
+
+        return first.next; // skip "Start"
+      }
+
+      function send(req) {
+        append("---");
+        append(
+          `Request: user=${req.user ? req.user.name + ":" + req.user.role : "anonymous"}, action=${req.action.name}, restricted=${req.action.restricted}`,
+        );
+        const chain = buildChain();
+        const res = chain
+          ? chain.handle(req)
+          : { ok: true, blocked: false, reason: "No handlers" };
+        if (!res.blocked)
+          append(
+            "⚠ finished without a terminal handler (nobody handled/blocked)",
+          );
+      }
+
+      // Buttons
+      document.getElementById("sendUser").addEventListener("click", () => {
+        send({
+          user: { name: "alex", role: "user" },
+          action: { name: "CreateOrder", restricted: true },
+          payload: { items: 3 },
+        });
+      });
+
+      document.getElementById("sendAdmin").addEventListener("click", () => {
+        send({
+          user: { name: "root", role: "admin" },
+          action: { name: "CreateOrder", restricted: true },
+          payload: { items: 3 },
+        });
+      });
+
+      document.getElementById("sendAnon").addEventListener("click", () => {
+        send({
+          user: null,
+          action: { name: "CreateOrder", restricted: true },
+          payload: { items: 3 },
+        });
+      });
+
+      document.getElementById("resetDemo").addEventListener("click", () => {
+        state.hits = 0;
+        state.windowStart = performance.now();
+        logEl.textContent = "ready.\n";
+      });
+    </script>
+  </body>
+</html>
